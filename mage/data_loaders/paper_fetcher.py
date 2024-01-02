@@ -14,7 +14,7 @@ def load_data_from_api(*args, **kwargs):
     """
     Template for loading data from API
     """
-    papers_json = pf().get_papers_json()
+    papers_json = pf(max_results=30).get_papers_json()
     if papers_json == '[]':
         return None
 

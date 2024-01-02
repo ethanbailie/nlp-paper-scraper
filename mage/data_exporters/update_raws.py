@@ -18,4 +18,4 @@ def export_data_to_postgres(df: DataFrame, **kwargs) -> None:
 
     Docs: https://docs.mage.ai/design/data-loading#postgresql
     """
-    pf().write_to_db(df=df)
+    pf().write_to_db(host='host.docker.internal', df=df)
