@@ -32,6 +32,7 @@ blocks:
   upstream_blocks:
   - paper_fetcher
   uuid: update_raws
+cache_block_output_in_memory: false
 callbacks: []
 concurrency_config: {}
 conditionals: []
@@ -44,6 +45,7 @@ executor_type: null
 extensions: {}
 name: paper_fetcher
 notification_config: {}
+remote_variables_dir: null
 retry_config: {}
 run_pipeline_in_one_process: false
 settings:
@@ -51,6 +53,7 @@ settings:
 spark_config: {}
 tags: []
 type: python
-updated_at: '2024-01-02 18:11:48'
+updated_at: '2024-01-11 04:21:07'
 uuid: paper_fetcher
+variables_dir: /home/src/mage_data/mage
 widgets: []
