@@ -10,12 +10,12 @@ blocks:
   language: python
   name: paper-fetcher
   retry_config: null
-  status: failed
+  status: executed
   timeout: null
   type: data_loader
   upstream_blocks: []
   uuid: paper_fetcher
-- all_upstream_blocks_executed: false
+- all_upstream_blocks_executed: true
   color: null
   configuration:
     file_path: null
@@ -32,7 +32,6 @@ blocks:
   upstream_blocks:
   - paper_fetcher
   uuid: update_raws
-cache_block_output_in_memory: false
 callbacks: []
 concurrency_config: {}
 conditionals: []
@@ -45,7 +44,6 @@ executor_type: null
 extensions: {}
 name: paper_fetcher
 notification_config: {}
-remote_variables_dir: null
 retry_config: {}
 run_pipeline_in_one_process: false
 settings:
@@ -53,7 +51,6 @@ settings:
 spark_config: {}
 tags: []
 type: python
-updated_at: '2024-01-11 03:40:14'
+updated_at: '2024-01-02 18:11:48'
 uuid: paper_fetcher
-variables_dir: /home/src/mage_data/mage
 widgets: []

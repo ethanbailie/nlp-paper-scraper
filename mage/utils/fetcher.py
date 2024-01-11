@@ -1,8 +1,6 @@
 import requests
 import xml.etree.ElementTree as ET
 import json
-import asyncio
-import aiohttp
 from sqlalchemy import create_engine
 
 ## this is a simple api call for most recent nlp papers from arxiv, in json format (ID, Title, Summary)
@@ -14,7 +12,7 @@ class paperFetcher:
                 self.max_results = max_results
                 self.start = start
 
-        async def fetch_papers(self):
+        def fetch_papers(self):
                 query_params = {
                         'search_query': f'cat:{self.category}',
                         'start': self.start,
@@ -22,9 +20,8 @@ class paperFetcher:
                         'sortBy': 'submittedDate',
                         'sortOrder': 'descending'
                 }
-                async with aiohttp.ClientSession() as session:
-                        async with session.get(self.base_url, params=query_params) as response:
-                                return await response.text()
+                response = requests.get(url=self.base_url, params=query_params)
+                return response.text
 
         def parse_papers(self, xml_data):
                 root = ET.fromstring(xml_data)
@@ -48,8 +45,8 @@ class paperFetcher:
 
                 return articles
 
-        async def get_papers_json(self):
-                xml_data = await self.fetch_papers()
+        def get_papers_json(self):
+                xml_data = self.fetch_papers()
                 articles = self.parse_papers(xml_data)
                 return json.dumps(articles, indent=4)
         
