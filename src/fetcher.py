@@ -1,7 +1,7 @@
 import requests
 import xml.etree.ElementTree as ET
 import json
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 
 ## this is a simple api call for most recent nlp papers from arxiv, in json format (ID, Title, Summary)
 class paperFetcher:
@@ -50,16 +50,17 @@ class paperFetcher:
                 articles = self.parse_papers(xml_data)
                 return json.dumps(articles, indent=4)
         
-        def write_to_db(self, dbname='postgres', user='postgres', password='', host='localhost', df=None):
+        def write_to_db(self, dbname='postgres', user='postgres', password='', host='localhost', df=None, table='raw_papers'):
                 engine = create_engine('postgresql://{user}:{password}@{host}:5432/{database}'.format(user=user, password=password, host=host, database=dbname))
                 max_updated = None
                 with engine.connect() as conn:
-                        result = conn.execute('select max(updated) from raw_papers')
+                        query = text('select max(updated) from {table}'.format(table=table))
+                        result = conn.execute(query)
                         max_updated = result.scalar()
                 
                 if max_updated == None:
-                        df.to_sql('raw_papers', engine, if_exists='append', index=False)
+                        df.to_sql(table, engine, if_exists='append', index=False)
                 else:
                         df = df[df['updated'] > max_updated]
-                        df.to_sql('raw_papers', engine, if_exists='append', index=False)
+                        df.to_sql(table, engine, if_exists='append', index=False)
                 

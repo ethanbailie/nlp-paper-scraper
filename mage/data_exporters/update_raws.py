@@ -16,4 +16,5 @@ def export_data_to_postgres(df: DataFrame, **kwargs) -> None:
     all this does is write the papers from the previous block
     to the postgres database
     """
+    pf().write_to_db(host='host.docker.internal', df=df, table='all_papers')
     pf().write_to_db(host='host.docker.internal', df=df)

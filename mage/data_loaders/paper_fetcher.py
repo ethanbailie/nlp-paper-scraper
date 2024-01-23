@@ -1,6 +1,7 @@
 import io
 import pandas as pd
 import requests
+
 from mage.utils.fetcher import paperFetcher as pf
 
 if 'data_loader' not in globals():
@@ -18,7 +19,7 @@ def load_data_from_api(*args, **kwargs):
     if papers_json == '[]':
         return None
 
-    papers_df = pd.read_json(papers_json)
+    papers_df = pd.read_json(io.StringIO(papers_json))
     return papers_df
 
 
