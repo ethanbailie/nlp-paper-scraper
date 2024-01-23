@@ -12,7 +12,7 @@ if 'test' not in globals():
 @data_loader
 def load_data_from_api(*args, **kwargs):
     """
-    Template for loading data from API
+    loads papers from the arXiv api
     """
     papers_json = pf(max_results=200).get_papers_json()
     if papers_json == '[]':
@@ -25,6 +25,6 @@ def load_data_from_api(*args, **kwargs):
 @test
 def test_output(output, *args) -> None:
     """
-    Template code for testing the output of the block.
+    tests to see if papers were successfully loaded
     """
     assert output is not None, 'The output is undefined'

@@ -7,15 +7,18 @@ from dotenv import load_dotenv
 import pandas as pd
 
 class embedder:
-    def __init__(self, user='postgres', host='localhost', openai_key=None, pinecone_key=None):
-        # get env variables
+    def __init__(self, user='postgres', host='localhost', ):
+        ## get env variables
         load_dotenv()
         
-        # set up postgres connector
+        ## set up postgres connector
         self.user = user
         self.host = host
         self.password = os.getenv('postgresPass')
         self.database = 'postgres'
+
+        openai_key=os.getenv('openaiKey')
+        pinecone_key=os.getenv('pineconeKey')
 
         conn = psycopg2.connect(
             host=self.host,
@@ -33,17 +36,17 @@ class embedder:
         self.env = "gcp-starter"
         self.index_name = 'nlp-embedding'
 
-        # initialize openai client
+        ## initialize openai client
         self.openAIClient = OpenAI(
             api_key=self.openai_key
         )
 
-        # initialize pinecone
+        ## initialize pinecone
         pinecone.init(api_key=self.pinecone_key, environment=self.env)
         self.index = pinecone.Index(self.index_name)
 
     def createIndex(self):
-        ## Check if index already exists, create if not.
+        ## check if index already exists, create if not
         if len(pinecone.list_indexes()) == 0 or pinecone.list_indexes()[0] != self.index_name:
             pinecone.create_index(
                 self.index_name,
@@ -51,11 +54,11 @@ class embedder:
                 metric='cosine',
             )
             
-        # view index stats
+        ## view index stats
         self.index.describe_index_stats()
 
     def paperQuery(self):
-        # grabs all papers in db
+        ## grabs all papers in db
         self.cur.execute(
             """
             SELECT *
@@ -76,80 +79,68 @@ class embedder:
         return papers
     
     def embed(self, papers):
-        # instantiate upsert
+        ## intantiate variables
         upsert_array = []
-
-        # set starting point
-        index_stats = self.index.describe_index_stats()
-        starting_point = index_stats['total_vector_count'] - 3
-
-        # retries for if the call fails
         max_retries = 3
         wait_period = 5
 
-        # embeds papers
-        for i in range(starting_point,len(papers)):
-            
-            # grab paper
-            paper = papers.iloc[i]
-            
-            # create id
+        total_papers = len(papers)
+        print(f"Total papers: {total_papers}")
+
+        ## loop over the papers
+        for i, paper in papers.iterrows():
+            print(f"Processing paper {i+1} of {total_papers}")
             paper_id = paper['id']
-            
-            # check if the paper already exists in the index
-            # if it does, skip remainder
+
+            ## check if the paper already exists in the index
             id_match = self.index.fetch([paper_id])
             if len(id_match['vectors']) > 0:
-                print('Review already in index, skipping.')
+                print('Paper already in index, skipping.\n')
                 continue
 
-            # create embedding
+            ## create embedding of the paper summary
             attempt = 0
             while attempt < max_retries:
-                
                 try:
                     res = self.openAIClient.embeddings.create(
-                        input=[paper['title'], paper['summary']],
+                        input=paper['summary'],
                         model=self.embed_model
                     )
                     embedding = res.data[0].embedding
                     break
-
                 except Exception as e:
-                    print("OpenAI call failure, waiting.")
+                    print(f"OpenAI call failure, error {e}.")
                     attempt += 1
                     if attempt < max_retries:
                         print("Trying again.")
                         time.sleep(wait_period)
                     else:
                         print("Max retries reached, failing.")
-        
-            metadata = {
-                'id': paper['id'],
-                'title': paper['title'],
-                'summary': paper['summary'],
-                'published': str(paper['published']),
-                'updated': str(paper['updated'])
-            }
+                        embedding = None
+            
+            ## if the embedding was sucessful, set the metadata and add to the upsert array as a tuple
+            if embedding:
+                metadata = {
+                    'id': paper_id,
+                    'title': paper['title'],
+                    'summary': paper['summary'],
+                    'published': str(paper['published']),
+                    'updated': str(paper['updated'])
+                }
 
-            upsert_array.append((embedding, metadata))
+                upsert_array.append((paper_id, embedding, metadata))
 
-            if i >= 0 and (i % 50) == 0:
-                print("Index Status:")
-                print(self.index.describe_index_stats())
-                print("Papers Processed:")
-                print(i)
-
+            ## if the upsert array contains tuples(papers) then upsert them
+            if upsert_array:
+                print(f"Upserting {len(upsert_array)} papers")
                 attempt = 0
                 while attempt < max_retries:
                     try:
-                        self.index.upsert(upsert_array)
+                        self.index.upsert(vectors=upsert_array)
                         upsert_array = []
-                        time.sleep(0.1)
                         break
-                        
                     except Exception as e:
-                        print("Upsert failure, waiting.")
+                        print(f"Upsert failure {e}, waiting.")
                         attempt += 1
                         if attempt < max_retries:
                             print("Trying again.")

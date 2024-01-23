@@ -13,9 +13,7 @@ if 'data_exporter' not in globals():
 @data_exporter
 def export_data_to_postgres(df: DataFrame, **kwargs) -> None:
     """
-    Template for exporting data to a PostgreSQL database.
-    Specify your configuration settings in 'io_config.yaml'.
-
-    Docs: https://docs.mage.ai/design/data-loading#postgresql
+    all this does is write the papers from the previous block
+    to the postgres database
     """
     pf().write_to_db(host='host.docker.internal', df=df)
