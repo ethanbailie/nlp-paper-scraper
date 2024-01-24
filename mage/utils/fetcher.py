@@ -12,6 +12,7 @@ class paperFetcher:
                 self.max_results = max_results
                 self.start = start
 
+        ## function to fetch papers from the arxiv api
         def fetch_papers(self):
                 query_params = {
                         'search_query': f'cat:{self.category}',
@@ -23,6 +24,7 @@ class paperFetcher:
                 response = requests.get(url=self.base_url, params=query_params)
                 return response.text
 
+        ## function to parse papers from the arxiv api
         def parse_papers(self, xml_data):
                 root = ET.fromstring(xml_data)
                 articles = []
@@ -45,11 +47,13 @@ class paperFetcher:
 
                 return articles
 
+        ## function to get papers in json format
         def get_papers_json(self):
                 xml_data = self.fetch_papers()
                 articles = self.parse_papers(xml_data)
                 return json.dumps(articles, indent=4)
         
+        ## function to write papers to the db
         def write_to_db(self, dbname='postgres', user='postgres', password='', host='localhost', df=None, table='raw_papers'):
                 engine = create_engine('postgresql://{user}:{password}@{host}:5432/{database}'.format(user=user, password=password, host=host, database=dbname))
                 max_updated = None
@@ -63,4 +67,12 @@ class paperFetcher:
                 else:
                         df = df[df['updated'] > max_updated]
                         df.to_sql(table, engine, if_exists='append', index=False)
-                
+
+        ## function for removing old papers from the db
+        def remove_old(self, dbname='postgres', user='postgres', password='', host='localhost', table='raw_papers', timeframe=7):
+                engine = create_engine('postgresql://{user}:{password}@{host}:5432/{database}'.format(user=user, password=password, host=host, database=dbname))
+
+                query = query = text("delete from {table} where updated::timestamp < current_date - {timeframe}".format(table=table, timeframe=timeframe))
+                with engine.connect() as conn:
+                        conn.execute(query)
+                        conn.commit()

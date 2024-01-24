@@ -53,6 +53,14 @@ class embedder:
                 dimension=1536,  # dimensionality of text-embedding-ada-002
                 metric='cosine',
             )
+        ## if the index exists, delete and recreate
+        else:
+            pinecone.delete_index(self.index_name)
+            pinecone.create_index(
+                self.index_name,
+                dimension=1536,  # dimensionality of text-embedding-ada-002
+                metric='cosine',
+            )
             
         ## view index stats
         self.index.describe_index_stats()
