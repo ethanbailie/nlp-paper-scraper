@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 import pandas as pd
 
 class embedder:
-    def __init__(self, user='postgres', host='localhost', ):
+    def __init__(self, user='postgres', host='localhost'):
         ## get env variables
         load_dotenv()
         
@@ -144,7 +144,7 @@ class embedder:
                 attempt = 0
                 while attempt < max_retries:
                     try:
-                        self.index.upsert(vectors=upsert_array)
+                        self.index.upsert(vectors=upsert_array, namespace='abstracts')
                         upsert_array = []
                         break
                     except Exception as e:
