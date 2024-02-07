@@ -47,7 +47,8 @@ class classify:
         pinecone.init(api_key=self.pinecone_key, environment=self.env)
         self.index = pinecone.Index(self.index_name)
 
-    def semanticSearch(self, uxFilters, searchInput=None, topKInput=100):
+    ## performs semantic search
+    def semanticSearch(self, namespace, searchInput, topKInput=100):
         ## embed search query
         res = self.openAIClient.embeddings.create(
             input=searchInput,
@@ -60,19 +61,51 @@ class classify:
         while count < 3:
             try:
                 searchResult = self.index.query(
+                    namespace=namespace,
                     vector=searchEmbedding, 
-                    filter=uxFilters,
                     top_k=topKInput,
                     include_metadata = True
                 )
-                break
+
+                matches = searchResult['matches']
+                return matches
+            
             except Exception as e:
                 print(e)
                 print("Search failed.")
                 count +=1
 
-        matches = searchResult['matches']
-        return matches
+        
+    
+    ## this function performs semantic search to find papers associated with a category
+    def classifier(self):
+        categories = ['Foundational Models and Architectures',
+                      'Language Understanding and Generation',
+                      'Transfer Learning and Adaptation',
+                      'Multilingual and Cross-Lingual Models',
+                      'Ethics, Bias, and Fairness',
+                      'Interpretability and Explainability',
+                      'Evaluation and Benchmarks',
+                      'Information Retrieval and Extraction',
+                      'Applications of NLP and LLMs',
+                      'Resource-Efficient Models and Deployment',
+                      'Tokenization and Text Processing']
+        
+        ## perform semantic search for each category
+        for category in categories:
+            results = self.semanticSearch(namespace='abstracts', searchInput=category)
+
+            ## for every match, assign the semantic search score to the ID
+            for match in results:
+                pass
+            
+            ## for all IDs not matching the category, assign 0 to the ID
+
+            ## idea here is that after all categories are processed, I will have a vector of scores for each paper
+            ## this will then be dot produced with my personal vector scores for each category
+            ## the resulting scalar will be the relevancy score per paper
+
+        
     
     
 
