@@ -1,6 +1,7 @@
 import io
 import pandas as pd
 import requests
+
 from mage.utils.fetcher import paperFetcher as pf
 
 if 'data_loader' not in globals():
@@ -12,19 +13,19 @@ if 'test' not in globals():
 @data_loader
 def load_data_from_api(*args, **kwargs):
     """
-    Template for loading data from API
+    loads papers from the arXiv api
     """
-    papers_json = pf(max_results=200).get_papers_json()
+    papers_json = pf(max_results=1000).get_papers_json()
     if papers_json == '[]':
         return None
 
-    papers_df = pd.read_json(papers_json)
+    papers_df = pd.read_json(io.StringIO(papers_json))
     return papers_df
 
 
 @test
 def test_output(output, *args) -> None:
     """
-    Template code for testing the output of the block.
+    tests to see if papers were successfully loaded
     """
     assert output is not None, 'The output is undefined'

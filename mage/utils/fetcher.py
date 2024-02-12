@@ -1,7 +1,10 @@
 import requests
 import xml.etree.ElementTree as ET
 import json
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
+
+
+## NEED TO SWITCH THESE FUNCTIONS TO ALL BE CAMEL CASE FOR CONSISTENCY
 
 ## this is a simple api call for most recent nlp papers from arxiv, in json format (ID, Title, Summary)
 class paperFetcher:
@@ -12,6 +15,7 @@ class paperFetcher:
                 self.max_results = max_results
                 self.start = start
 
+        ## function to fetch papers from the arxiv api
         def fetch_papers(self):
                 query_params = {
                         'search_query': f'cat:{self.category}',
@@ -23,6 +27,7 @@ class paperFetcher:
                 response = requests.get(url=self.base_url, params=query_params)
                 return response.text
 
+        ## function to parse papers from the arxiv api
         def parse_papers(self, xml_data):
                 root = ET.fromstring(xml_data)
                 articles = []
@@ -45,21 +50,32 @@ class paperFetcher:
 
                 return articles
 
+        ## function to get papers in json format
         def get_papers_json(self):
                 xml_data = self.fetch_papers()
                 articles = self.parse_papers(xml_data)
                 return json.dumps(articles, indent=4)
         
-        def write_to_db(self, dbname='postgres', user='postgres', password='', host='localhost', df=None):
+        ## function to write papers to the db
+        def write_to_db(self, dbname='postgres', user='postgres', password='', host='localhost', df=None, table='raw_papers'):
                 engine = create_engine('postgresql://{user}:{password}@{host}:5432/{database}'.format(user=user, password=password, host=host, database=dbname))
                 max_updated = None
                 with engine.connect() as conn:
-                        result = conn.execute('select max(updated) from raw_papers')
+                        query = text('select max(updated) from {table}'.format(table=table))
+                        result = conn.execute(query)
                         max_updated = result.scalar()
                 
                 if max_updated == None:
-                        df.to_sql('raw_papers', engine, if_exists='append', index=False)
+                        df.to_sql(table, engine, if_exists='append', index=False)
                 else:
                         df = df[df['updated'] > max_updated]
-                        df.to_sql('raw_papers', engine, if_exists='append', index=False)
-                
+                        df.to_sql(table, engine, if_exists='append', index=False)
+
+        ## function for removing old papers from the db
+        def remove_old(self, dbname='postgres', user='postgres', password='', host='localhost', table='raw_papers', timeframe=7):
+                engine = create_engine('postgresql://{user}:{password}@{host}:5432/{database}'.format(user=user, password=password, host=host, database=dbname))
+
+                query = text("delete from {table} where updated::timestamp < current_date - {timeframe}".format(table=table, timeframe=timeframe))
+                with engine.connect() as conn:
+                        conn.execute(query)
+                        conn.commit()
