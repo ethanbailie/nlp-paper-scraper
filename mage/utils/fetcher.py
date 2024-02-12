@@ -75,7 +75,7 @@ class paperFetcher:
         def remove_old(self, dbname='postgres', user='postgres', password='', host='localhost', table='raw_papers', timeframe=7):
                 engine = create_engine('postgresql://{user}:{password}@{host}:5432/{database}'.format(user=user, password=password, host=host, database=dbname))
 
-                query = query = text("delete from {table} where updated::timestamp < current_date - {timeframe}".format(table=table, timeframe=timeframe))
+                query = text("delete from {table} where updated::timestamp < current_date - {timeframe}".format(table=table, timeframe=timeframe))
                 with engine.connect() as conn:
                         conn.execute(query)
                         conn.commit()
