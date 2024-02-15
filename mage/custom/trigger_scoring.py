@@ -2,7 +2,8 @@ if 'custom' not in globals():
     from mage_ai.data_preparation.decorators import custom
 if 'test' not in globals():
     from mage_ai.data_preparation.decorators import test
-
+    
+from mage_ai.orchestration.triggers.api import trigger_pipeline
 
 @custom
 def transform_custom(*args, **kwargs):
