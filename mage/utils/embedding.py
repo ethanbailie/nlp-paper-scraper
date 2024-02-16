@@ -32,7 +32,7 @@ class embedder:
         # instantiate variables
         self.openai_key = openai_key
         self.pinecone_key = pinecone_key
-        self.embed_model = "text-embedding-ada-002"
+        self.embed_model = "text-embedding-3-small"
         self.env = "gcp-starter"
         self.index_name = 'nlp-embedding'
 
