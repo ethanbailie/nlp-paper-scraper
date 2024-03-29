@@ -50,7 +50,7 @@ class embedder:
         if len(pinecone.list_indexes()) == 0 or pinecone.list_indexes()[0] != self.index_name:
             pinecone.create_index(
                 self.index_name,
-                dimension=1536,  # dimensionality of text-embedding-ada-002
+                dimension=1536,  # dimensionality of embedding model
                 metric='cosine',
             )
         ## if the index exists, delete and recreate
@@ -58,7 +58,7 @@ class embedder:
             pinecone.delete_index(self.index_name)
             pinecone.create_index(
                 self.index_name,
-                dimension=1536,  # dimensionality of text-embedding-ada-002
+                dimension=1536,  # dimensionality of embedding model
                 metric='cosine',
             )
             

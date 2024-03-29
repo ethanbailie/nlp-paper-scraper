@@ -36,7 +36,7 @@ class classify:
         ## instantiate variables
         self.openai_key = openai_key
         self.pinecone_key = pinecone_key
-        self.embed_model = "text-embedding-ada-002"
+        self.embed_model = "text-embedding-3-small"
         self.env = "gcp-starter"
         self.index_name = 'nlp-embedding'
 
@@ -199,4 +199,3 @@ class classify:
     def writeScores(self, scores):
         engine = create_engine(f'postgresql://{self.user}:{self.password}@{self.host}:5432/{self.database}')
         scores.to_sql('scores', engine, if_exists='replace', index=False)
-
