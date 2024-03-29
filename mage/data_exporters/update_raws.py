@@ -16,8 +16,8 @@ def export_data_to_postgres(df: DataFrame, **kwargs) -> None:
     write papers from previous block to both databases (latest and historical)
     and removes old papers from the database holding latest papers
     """
-    pf().write_to_db(host='host.docker.internal', df=df, table='all_papers')
+    pf().writeToDb(host='host.docker.internal', df=df, table='all_papers')
     
-    pf().write_to_db(host='host.docker.internal', df=df)
+    pf().writeToDb(host='host.docker.internal', df=df)
     
-    pf().remove_old(host='host.docker.internal', timeframe=7)
+    pf().removeOld(host='host.docker.internal', timeframe=7)

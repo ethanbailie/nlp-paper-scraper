@@ -15,7 +15,7 @@ def load_data_from_api(*args, **kwargs):
     """
     loads papers from the arXiv api
     """
-    papers_json = pf(max_results=1000).get_papers_json()
+    papers_json = pf(max_results=1000).getPapersJson()
     if papers_json == '[]':
         return None
 

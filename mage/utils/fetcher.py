@@ -16,7 +16,7 @@ class paperFetcher:
                 self.start = start
 
         ## function to fetch papers from the arxiv api
-        def fetch_papers(self):
+        def fetchPapers(self):
                 query_params = {
                         'search_query': f'cat:{self.category}',
                         'start': self.start,
@@ -28,7 +28,7 @@ class paperFetcher:
                 return response.text
 
         ## function to parse papers from the arxiv api
-        def parse_papers(self, xml_data):
+        def parsePapers(self, xml_data):
                 root = ET.fromstring(xml_data)
                 articles = []
 
@@ -51,13 +51,13 @@ class paperFetcher:
                 return articles
 
         ## function to get papers in json format
-        def get_papers_json(self):
+        def getPapersJson(self):
                 xml_data = self.fetch_papers()
                 articles = self.parse_papers(xml_data)
                 return json.dumps(articles, indent=4)
         
         ## function to write papers to the db
-        def write_to_db(self, dbname='postgres', user='postgres', password='', host='localhost', df=None, table='raw_papers'):
+        def writeToDb(self, dbname='postgres', user='postgres', password='', host='localhost', df=None, table='raw_papers'):
                 engine = create_engine('postgresql://{user}:{password}@{host}:5432/{database}'.format(user=user, password=password, host=host, database=dbname))
                 max_updated = None
                 with engine.connect() as conn:
@@ -72,7 +72,7 @@ class paperFetcher:
                         df.to_sql(table, engine, if_exists='append', index=False)
 
         ## function for removing old papers from the db
-        def remove_old(self, dbname='postgres', user='postgres', password='', host='localhost', table='raw_papers', timeframe=7):
+        def removeOld(self, dbname='postgres', user='postgres', password='', host='localhost', table='raw_papers', timeframe=7):
                 engine = create_engine('postgresql://{user}:{password}@{host}:5432/{database}'.format(user=user, password=password, host=host, database=dbname))
 
                 query = text("delete from {table} where updated::timestamp < current_date - {timeframe}".format(table=table, timeframe=timeframe))
