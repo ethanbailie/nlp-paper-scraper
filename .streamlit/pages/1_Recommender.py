@@ -69,14 +69,13 @@ if run:
     weekly_max = weekly_scores.loc[weekly_scores['preference'].idxmax()]
 
     ## output the chosen papers with links
-    st.write('Daily Most Relevant Article:')
-    st.write('[', daily_max['title'], '](', daily_max['id'], ')')
+    with st.container(border=True):
+        st.write('Daily Most Relevant Article:')
+        st.write('[', daily_max['title'], '](', daily_max['id'], ')')
 
-    st.text('')
-    st.text('')
-
-    st.write('Weekly Most Relevant Article:')
-    st.write('[', weekly_max['title'], '](', weekly_max['id'], ')')
+    with st.container(border=True):
+        st.write('Weekly Most Relevant Article:')
+        st.write('[', weekly_max['title'], '](', weekly_max['id'], ')')
 
     ## expandable menu in case the user wishes to see the full tables and their scores
     with st.expander('Full Tables', expanded=False):
