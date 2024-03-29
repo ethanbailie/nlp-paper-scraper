@@ -52,8 +52,8 @@ class paperFetcher:
 
         ## function to get papers in json format
         def getPapersJson(self):
-                xml_data = self.fetch_papers()
-                articles = self.parse_papers(xml_data)
+                xml_data = self.fetchPapers()
+                articles = self.parsePapers(xml_data)
                 return json.dumps(articles, indent=4)
         
         ## function to write papers to the db
