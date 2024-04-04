@@ -15,11 +15,13 @@ def convert_to_list_of_floats(s):
 pg = pg_query()
 
 ## query for daily and weekly score tables
+#  daily is last 36 hours because arXiv only updates daily, so we can't just take the last 24 hours 
+#  (ie. if you check at 11pm there will be nothing from 24 hours ago)
 daily_scores = pg.query(
     """
     select *
     from public.scores
-    where updated::timestamp > now() - interval '1 day'
+    where updated::timestamp > now() - interval '36 hour' 
     """
 )
 

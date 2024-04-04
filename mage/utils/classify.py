@@ -99,19 +99,6 @@ class classify:
             )
         """)
         self.conn.commit()
-
-        ## categories to use semantic search on
-        categories = ['Foundational Models and Architectures',
-                      'Language Understanding and Generation',
-                      'Transfer Learning and Adaptation',
-                      'Multilingual and Cross-Lingual Models',
-                      'Ethics, Bias, and Fairness',
-                      'Interpretability and Explainability',
-                      'Evaluation and Benchmarks',
-                      'Information Retrieval and Extraction',
-                      'Applications of NLP and LLMs',
-                      'Resource-Efficient Models and Deployment',
-                      'Tokenization and Text Processing']
         
         ## categories for the postgres table
         postgres_categories = [
@@ -128,26 +115,61 @@ class classify:
             'tokenization_and_text_processing'
         ]
 
+        ## descriptions of each category that will be used to search for relevant papers
+        descriptions = [
+            # Foundational Models and Architectures
+            "Exploration of core AI model innovations, specifically in BERT, GPT, and transformer technologies, focusing on architectural improvements, efficiency optimization, and the principles governing model scaling.",
+            
+            # Language Understanding and Generation
+            "Investigations into enhancing AI's capability for understanding complex language structures and generating coherent, contextually aware text, including creative outputs such as poetry and narrative content.",
+            
+            # Transfer Learning and Adaptation
+            "Discussion on methodologies for knowledge adaptation and application across different domains, emphasizing fine-tuning for specialized tasks and strategies for effective few-shot and zero-shot learning approaches.",
+            
+            # Multilingual and Cross-Lingual Models
+            "Development and assessment of AI models proficient in multiple languages, focusing on cross-lingual knowledge transfer techniques and the training of multilingual systems.",
+            
+            # Ethics, Bias, and Fairness
+            "Examination of the societal implications of NLP and large language models, with a focus on identifying, mitigating biases, and promoting ethical practices, fairness, and transparency in AI development.",
+            
+            # Interpretability and Explainability
+            "Research into methodologies for enhancing the clarity and comprehensibility of AI model decisions, including innovative approaches to visualize and elucidate model processes and behaviors.",
+            
+            # Evaluation and Benchmarks
+            "Creation and refinement of benchmarks, metrics, and datasets for the rigorous evaluation of NLP model performance across various tasks and real-world applications.",
+            
+            # Information Retrieval and Extraction
+            "Techniques and algorithms for the extraction of structured data from unstructured text sources, enhancing capabilities in search, summarization, question answering, and topic discovery.",
+            
+            # Applications of NLP and LLMs
+            "Case studies and research on applying NLP and large language models within specific sectors, including healthcare, finance, legal, and educational, addressing domain-specific challenges and opportunities.",
+            
+            # Resource-Efficient Models and Deployment
+            "Examination of resource-efficient models and deployments for reducing the resource demands of AI models, covering strategies for model compression, quantization, and deployment in environments with limited computational resources.",
+            
+            # Tokenization and Text Processing
+            "Research on tokenization algorithms and encoder model enhancements focused on optimizing text semantic representation, efficient preprocessing techniques, and overall improvements in NLP task performance through advanced text processing pipelines."]
+
         ## counter to track current category
         counter = 0
 
         ## perform semantic search for each category
-        for category in categories:
-            results = self.semanticSearch(namespace='abstracts', searchInput=category)
+        for description in descriptions:
+            results = self.semanticSearch(namespace='abstracts', searchInput=description)
 
             ## for every match, assign the semantic search score to the ID
             ids = [match['id'] for match in results]
             scores = [match['score'] for match in results]
 
             ## creates a dataframe with the IDs and scores for a given category
-            category_df = pd.DataFrame({'id': ids, category: scores})
+            category_df = pd.DataFrame({'id': ids, 'scores': scores})
 
             for index, row in category_df.iterrows():
                 self.cur.execute("""
                     insert into public.temp_scores (id, {0})
                     values (%s, %s)
                     on conflict (id) do update set {0} = excluded.{0}
-                """.format(postgres_categories[counter]), (row['id'], row[category]))
+                """.format(postgres_categories[counter]), (row['id'], row['scores']))
                 self.conn.commit()
             
             counter += 1

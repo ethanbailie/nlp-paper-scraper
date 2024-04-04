@@ -87,7 +87,6 @@ settings:
 spark_config: {}
 tags: []
 type: python
-updated_at: '2024-03-29T00:51:08+00:00'
 uuid: paper_fetcher
 variables_dir: /home/src/mage_data/mage
 widgets: []
