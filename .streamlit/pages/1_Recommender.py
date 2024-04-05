@@ -21,7 +21,7 @@ daily_scores = pg.query(
     """
     select *
     from public.scores
-    where updated::timestamp > now() - interval '36 hour' 
+    where updated::timestamp > now() - interval '2 day' 
     """
 )
 
