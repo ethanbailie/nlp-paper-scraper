@@ -21,7 +21,7 @@ daily_scores = pg.query(
     """
     select *
     from public.scores
-    where updated::timestamp > now() - interval '2 day' 
+    where updated::timestamp > now() - interval '36 hour' 
     """
 )
 
@@ -32,12 +32,18 @@ weekly_scores = pg.query(
     """
 )
 
+## check if theres papers from the last 36 hours
+if not daily_scores.empty:
+    ## give column names to the data frames
+    daily_scores.columns = ['id', 'str_scores', 'title', 'updated']
+
+    ## convert scores to numeric data type using helper
+    daily_scores['scores'] = daily_scores['str_scores'].apply(convert_to_list_of_floats)
+
 ## give column names to the data frames
-daily_scores.columns = ['id', 'str_scores', 'title', 'updated']
 weekly_scores.columns = ['id', 'str_scores', 'title', 'updated']
 
 ## convert scores to numeric data type using helper
-daily_scores['scores'] = daily_scores['str_scores'].apply(convert_to_list_of_floats)
 weekly_scores['scores'] = weekly_scores['str_scores'].apply(convert_to_list_of_floats)
 
 ## giant menu for the user to change the preferences if needed
@@ -62,24 +68,38 @@ if run:
     ## set the chosen preferences to be a vector
     preference = [fma_input, lug_input, tla_input, mclm_input, ebf_input, ie_input, eb_input, ire_input, aonl_input, remd_input, ttp_input]
 
+    ### daily section
+    ## check if daily papers exists
+    if not daily_scores.empty:
+        ## perform dot product between preference vector and score vectors
+        daily_scores['preference'] = daily_scores['scores'].map(lambda x: dot(x, preference))
+
+        ## grab the highest scoring paper from preferences based on time scale
+        daily_max = daily_scores.loc[daily_scores['preference'].idxmax()]
+
+        ## output the chosen papers with links
+        with st.container(border=True):
+            st.write('Daily Most Relevant Article:')
+            st.write('[', daily_max['title'], '](', daily_max['id'], ')')
+
+    ### weekly section
     ## perform dot product between preference vector and score vectors
-    daily_scores['preference'] = daily_scores['scores'].map(lambda x: dot(x, preference))
     weekly_scores['preference'] = weekly_scores['scores'].map(lambda x: dot(x, preference))
     
     ## grab the highest scoring paper from preferences based on time scale
-    daily_max = daily_scores.loc[daily_scores['preference'].idxmax()]
     weekly_max = weekly_scores.loc[weekly_scores['preference'].idxmax()]
 
     ## output the chosen papers with links
     with st.container(border=True):
-        st.write('Daily Most Relevant Article:')
-        st.write('[', daily_max['title'], '](', daily_max['id'], ')')
-
-    with st.container(border=True):
         st.write('Weekly Most Relevant Article:')
         st.write('[', weekly_max['title'], '](', weekly_max['id'], ')')
 
+    
     ## expandable menu in case the user wishes to see the full tables and their scores
     with st.expander('Full Tables', expanded=False):
-        st.write(daily_scores[['id', 'title', 'scores', 'preference']].sort_values(by='preference', ascending=False))
+        st.write('Daily:')
+        if not daily_scores.empty:
+            st.write(daily_scores[['id', 'title', 'scores', 'preference']].sort_values(by='preference', ascending=False))
+
+        st.write('Weekly:')
         st.write(weekly_scores[['id', 'title', 'scores', 'preference']].sort_values(by='preference', ascending=False))
