@@ -1,7 +1,7 @@
 import psycopg2
 import os
 from openai import OpenAI
-import pinecone
+from pinecone import Pinecone
 from dotenv import load_dotenv
 import pandas as pd
 from sqlalchemy import create_engine, text
@@ -46,8 +46,8 @@ class classify:
         )
 
         ## initialize pinecone
-        pinecone.init(api_key=self.pinecone_key, environment=self.env)
-        self.index = pinecone.Index(self.index_name)
+        self.pc = Pinecone(api_key=self.pinecone_key)
+        self.index = self.pc.Index(self.index_name)
 
     ## performs semantic search
     def semanticSearch(self, namespace, searchInput, topKInput=100):

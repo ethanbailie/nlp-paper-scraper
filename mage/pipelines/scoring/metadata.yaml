@@ -10,12 +10,12 @@ blocks:
   language: python
   name: scoring
   retry_config: null
-  status: executed
+  status: failed
   timeout: null
   type: custom
   upstream_blocks: []
   uuid: scoring
-- all_upstream_blocks_executed: true
+- all_upstream_blocks_executed: false
   color: yellow
   configuration: {}
   downstream_blocks: []

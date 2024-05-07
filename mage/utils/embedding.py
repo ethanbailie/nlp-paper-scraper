@@ -2,7 +2,7 @@ import psycopg2
 import os
 import time
 from openai import OpenAI
-import pinecone
+from pinecone import Pinecone, ServerlessSpec
 from dotenv import load_dotenv
 import pandas as pd
 
@@ -33,7 +33,6 @@ class embedder:
         self.openai_key = openai_key
         self.pinecone_key = pinecone_key
         self.embed_model = "text-embedding-ada-002"
-        self.env = "gcp-starter"
         self.index_name = 'nlp-embedding'
 
         ## initialize openai client
@@ -42,24 +41,39 @@ class embedder:
         )
 
         ## initialize pinecone
-        pinecone.init(api_key=self.pinecone_key, environment=self.env)
-        self.index = pinecone.Index(self.index_name)
+        self.pc = Pinecone(api_key=self.pinecone_key)
+        self.index = self.pc.Index(self.index_name)
 
     def createIndex(self):
         ## check if index already exists, create if not
-        if len(pinecone.list_indexes()) == 0 or pinecone.list_indexes()[0] != self.index_name:
-            pinecone.create_index(
-                self.index_name,
+        exists = False
+        for index in self.pc.list_indexes():
+            if self.index_name == index['name']:
+                exists = True
+
+        if not exists:
+            print(self.pc.list_indexes()[0]['name'])
+            self.pc.create_index(
+                name=self.index_name,
                 dimension=1536,  # dimensionality of embedding model
                 metric='cosine',
+                spec=ServerlessSpec(
+                    cloud='aws',
+                    region='us-east-1'
+                )
             )
+            
         ## if the index exists, delete and recreate
         else:
-            pinecone.delete_index(self.index_name)
-            pinecone.create_index(
-                self.index_name,
+            self.pc.delete_index(self.index_name)
+            self.pc.create_index(
+                name=self.index_name,
                 dimension=1536,  # dimensionality of embedding model
                 metric='cosine',
+                spec=ServerlessSpec(
+                    cloud='aws',
+                    region='us-east-1'
+                )
             )
             
         ## view index stats
