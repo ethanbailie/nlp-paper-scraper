@@ -3,9 +3,6 @@ import xml.etree.ElementTree as ET
 import json
 from sqlalchemy import create_engine, text
 
-
-## NEED TO SWITCH THESE FUNCTIONS TO ALL BE CAMEL CASE FOR CONSISTENCY
-
 ## this is a simple api call for most recent nlp papers from arxiv, in json format (ID, Title, Summary)
 class paperFetcher:
         
